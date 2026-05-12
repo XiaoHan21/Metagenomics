@@ -60,28 +60,57 @@ if [ -z "$(ls -A "$TMP_DIR")" ]; then
     exit 1
 fi
 
-echo "Starting to merge HUMAnN tables..."
+echo "Starting to merge and process HUMAnN tables..."
 
-# 3. Loop through table types, merge, and format
+# 3. Loop through table types to merge, normalize, and split
 for type in "${TABLE_TYPES[@]}"; do
     echo "-----------------------------------------"
     echo "Processing: $type"
     OUTPUT_FILE="${OUTPUT_DIR}/${type}.tsv"
+    RELAB_FILE="${OUTPUT_DIR}/${type}_relab.tsv"
 
-    # Merge tables from the flat temporary directory
+    # Step A: Merge tables from the flat temporary directory
+    echo "  -> Merging tables..."
     humann_join_tables \
         --input "$TMP_DIR" \
         --file_name "$type" \
         --output "$OUTPUT_FILE"
 
-    # Check if the output file was generated successfully
     if [ $? -eq 0 ]; then
         # Format sampleID by removing the '_Abundance' suffix
         sed -i 's/_Abundance//g' "$OUTPUT_FILE"
-        echo "Success! Merged table saved to $OUTPUT_FILE"
     else
         echo "Error: Failed to merge $type tables."
-        # Clean up tmp directory on error
+        rm -rf "$TMP_DIR"
+        exit 1
+    fi
+
+    # Step B: Normalize to relative abundance (relab)
+    echo "  -> Normalizing to relative abundance (relab)..."
+    humann_renorm_table \
+        --input "$OUTPUT_FILE" \
+        --units relab \
+        --output "$RELAB_FILE"
+
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to normalize $type."
+        rm -rf "$TMP_DIR"
+        exit 1
+    fi
+
+    # Optional: Preview the first 5 lines of the relab file in the log
+    # head -n 5 "$RELAB_FILE"
+
+    # Step C: Stratify into function-related species and function-only
+    echo "  -> Splitting into stratified and unstratified tables..."
+    humann_split_stratified_table \
+        --input "$RELAB_FILE" \
+        --output "$OUTPUT_DIR"
+
+    if [ $? -eq 0 ]; then
+        echo "Success! Processing completed for $type"
+    else
+        echo "Error: Failed to split $type tables."
         rm -rf "$TMP_DIR"
         exit 1
     fi
