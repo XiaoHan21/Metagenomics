@@ -34,7 +34,7 @@ echo "========================================="
 
 # Activate the conda environment properly
 echo "Activating conda environment (humann4_mpa4.1.1)..."
-source ~/xiaohan/Software/miniconda3/etc/profile.d/conda.sh
+source ~/xiaohan/Software/miniconda3/bin/activate
 conda activate humann4_mpa4.1.1
 
 # Define the standard HUMAnN output table types
