@@ -27,7 +27,7 @@ echo "========================================="
 
 # Activate the conda environment properly to avoid ArgumentError
 echo "Activating conda environment (humann4_mpa4.1.1)..."
-source ~/xiaohan/Software/miniconda3/bin/activate
+source /home/han_xiao/xiaohan/Software/miniconda3/bin/activate
 conda activate humann4_mpa4.1.1
 
 # Locate MetaPhlAn bugs list tables using the correct file extension
