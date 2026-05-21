@@ -436,6 +436,13 @@ write.csv(alpha_div_meta, file.path(outdir,"07.diversity","o1.AlphaDiversity.tbl
 
 
 #-------------------------------------------------------------------------------
+# 1. 构建 phyloseq 对象 (只需使用相对丰度矩阵)
+OTU_rel <- otu_table(as.matrix(rel.mat.fil), taxa_are_rows = TRUE)
+SAM <- sample_data(metadata)
+physeq_rel <- phyloseq(OTU_rel, SAM)
+
+# 获取保留的物种名称
+kept_taxa <- taxa_names(physeq_rel)
 
 set.seed(666)
 
